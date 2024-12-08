@@ -1,0 +1,41 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\MyLap HP\\OneDrive\\Desktop\\Final Year Project\\Reference Project\\Decentralized-Case-Management-System-using-IPFS-main\\CaseManagementSystem\\contracts\\Upload.sol": {
+      "lastModificationDate": 1732338119436,
+      "contentHash": "5e13aff36f1c2f2878282c25980b1b1a",
+      "sourceName": "contracts/Upload.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Upload"
+      ]
+    }
+  }
+}
