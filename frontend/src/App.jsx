@@ -3,13 +3,13 @@ import { ethers } from 'ethers';
 import abi from './contractJson/Upload.json';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ConnectButton from './miniComponents/ConnectButton';
-import fox from './assets/images/fox.jpeg';
-import fox2 from './assets/images/fox2.jpeg';
+import fox from './assets/images/fox.png';
+import fox2 from './assets/images/fox2.png';
 import NavBar from './miniComponents/NavBar';
 import UploadCase from './components/UploadCase';
 import DisplayCase from './components/DisplayCase';
 import ShareAccess from './components/ShareAccess';
-
+import Home from './components/Home';
 function App() {
   const [state, setState] = useState({
     provider: null,
@@ -104,10 +104,11 @@ function App() {
           <Route path='/share' element={<ShareAccess state={state} />} />
         </Routes>
       </Router>
-
-      <div className='w-full h-full p-[65px] justify-center items-center mx-auto bg-[#030014] max-w-7xl overflow-y-hidden overflow-x-hidden'>
+      
+      {location.pathname == '/' ? (
+        <div className='w-full min-h-screen justify-center items-center mx-auto bg-[#030014] max-w-7xl overflow-y-hidden overflow-x-hidden'>
         {!connected ? (
-          <div className='flex flex-col items-center justify-center h-full'>
+          <div className='flex flex-col items-center justify-center'>
             <h1 className='text-3xl text-white mt-20'>Connect to the Blockchain</h1>
             <img src={fox} alt='per' border='0' className='mt-10 w-[30%] h-[30%]' />
             <ConnectButton onClick={connectToMetaMask} disabled={connected} text={connected ? 'Connected' : 'Connect with MetaMask'} />
@@ -120,6 +121,7 @@ function App() {
           </div>
         )}
       </div>
+    ) : <></>}
     </div>
   );
 }

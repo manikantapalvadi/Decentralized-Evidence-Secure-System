@@ -15,7 +15,7 @@
     "@helia/unixfs": "^3.0.0",
     "@heroicons/react": "^2.1.1",
     "crypto-js": "^4.2.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "ethers": "^6.11.0",
     "helia": "^4.0.1",
     "multiformats": "^13.1.0",

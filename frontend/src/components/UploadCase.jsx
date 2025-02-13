@@ -10,26 +10,37 @@ const UploadCase = ({ state }) => {
   const [fileInputs, setFileInputs] = useState([]);
   const [fileArray, setFileArray] = useState([]);
   const [uniqueCaseID, setUniqueCaseID] = useState('');
+  const [filePreview, setFilepreview] = useState([]);
+  const handleFileInputChange = (event) => {
+    const files = event.target.files;
 
-  const handleFileInputChange = (index, event) => {
-    if (index < 8) {
-      const files = event.target.files;
-      const file = files[0];
-      const reader = new FileReader();
+    if (files.length <= 8) {
+      const newFileArray = [...fileArray]; // Clone the current fileArray
+      const newFilePreviewArray = [...filePreview];
+      Array.from(files).forEach((file, idx) => {
+        const reader = new FileReader();
 
-      reader.onload = () => {
-        const fileData = reader.result.split(',')[1];
-        setFileArray(prevFileArray => {
-          const updatedFileArray = [...prevFileArray];
-          updatedFileArray[index] = {
+        reader.onload = () => {
+          const fileData = reader.result.split(',')[1];
+
+          newFileArray[idx] = {
             name: file.name,
             data: fileData,
           };
-          return updatedFileArray;
-        });
-      };
 
-      reader.readAsDataURL(file);
+          newFilePreviewArray[idx] = {
+            preview : reader.result,
+            name : file.name,
+            size : file.size,
+          };
+
+          // Update state only once all files are processed
+          setFileArray([...newFileArray]);
+          setFilepreview([...newFilePreviewArray]);
+        };
+
+        reader.readAsDataURL(file);
+      });
     } else {
       alert('You can upload a maximum of 8 files.');
     }
@@ -48,8 +59,8 @@ const UploadCase = ({ state }) => {
     };
 
 
-    const userPrivateKey = '003cd9d5e83097af59e808ca32085dab6d3653226b5a9289154fc9a8daaee283';
-    const IPFS_Key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiJlYWIxMzM5OC1kOWQ4LTQ5YjEtOWE0OS1jY2E0MDRkYWZkNTMiLCJlbWFpbCI6Im1hbmlwdnNqdW5rQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiIwN2UzZmZlZTQyZTVkN2ZkNDViNCIsInNjb3BlZEtleVNlY3JldCI6ImM4NGIyYjE2ODdlMzJhZjllMzFlZDNjNjI5MTNjZDRmNWE5MDQ4MGE1NDYwYmJkZDQ3ZjE3ZWQ0MWVjZjg5ODQiLCJleHAiOjE3NjM5Nzk3Njl9.7Y7eCHQG5oDDebw0NvKFBqRx9AuwiidJi13xr3ogf8s';
+    const userPrivateKey = Metamask_PrivateKey;
+    const IPFS_Key = IPFS_key_from_pinata;
     const options = {
       method: 'POST',
       headers: {
@@ -80,7 +91,7 @@ const UploadCase = ({ state }) => {
 
         const transaction = await contract.addCase(caseName, encryptedCID);
         const receipt = await transaction.wait();
-        
+
         if (receipt.status === 1) {
           alert('Transaction Successful');
           console.log(transaction);
@@ -97,6 +108,7 @@ const UploadCase = ({ state }) => {
           result: receipt.status === 1 ? 'success' : 'failed',
         };
         await sendLogToServer(logData);
+        window.location.reload();
       } else {
         console.log('Invalid CID received from IPFS');
       }
@@ -116,86 +128,105 @@ const UploadCase = ({ state }) => {
   const sendLogToServer = async (logData) => {
     try {
       console.log('Log Data:', logData);
-        const response = await fetch('http://localhost:5000/logs', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(logData)
-        });
-        const data = await response.json();
-        console.log('Log sent successfully:', data);
+      const response = await fetch('http://localhost:5000/logs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(logData)
+      });
+      const data = await response.json();
+      console.log('Log sent successfully:', data);
     } catch (error) {
-        console.error('Error sending log:', error);
+      console.error('Error sending log:', error);
     }
   };
 
   return (
-    <div className="w-full h-full p-10 justify-center items-center mx-auto bg-[#030014] max-w-7xl overflow-y-hidden overflow-x-hidden">
-      <form className="max-w-sm mx-auto">
-        <div className="mb-5">
-          <label htmlFor="account" className="block mb-2 text-sm font-medium text-white">
-              Connected Account
+    <div className="flex p-10 items-center justify-center min-h-screen bg-gray-900">
+    <div className="bg-gray-800 rounded-lg shadow-xl p-8 max-w-4xl w-full">
+      <h2 className="text-2xl font-semibold text-white text-center mb-6">Upload Case</h2>
+      <form onSubmit={handleUpload} className="space-y-6">
+        <div>
+          <label htmlFor="account" className="block text-sm font-medium text-gray-300">
+            Connected Account
           </label>
-           <input
-             type="text"
-             id="account"
-             className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm-light"
-             value={account}
-             readOnly
-           />
-           </div>
-           <div className="mb-5">
-          <label htmlFor="caseName" className="block mb-2 text-sm font-medium text-white">
+          <input
+            type="text"
+            id="account"
+            value={account}
+            readOnly
+            className="block w-full px-4 py-2 mt-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-300 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        <div>
+          <label htmlFor="caseName" className="block text-sm font-medium text-gray-300">
             Unique Case Name
           </label>
           <input
             type="text"
             id="caseName"
-            className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm-light"
             value={caseName}
-            onChange={e => setCaseName(e.target.value)}
+            onChange={(e) => setCaseName(e.target.value)}
             required
+            className="block w-full px-4 py-2 mt-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-300 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        <div className="mb-5">
-          <label htmlFor="numFiles" className="block mb-2 text-sm font-medium text-white">
-            No of files to Upload
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Upload Files (Max: 8)
           </label>
-          <input
-            type="number"
-            id="numFiles"
-            className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm-light"
-            value={numFiles}
-            onChange={e => setNumFiles(parseInt(e.target.value))}
-            required
-          />
-        </div>
-        {Array.from({ length: numFiles }).map((_, index) => (
-          <div key={index} className="mb-5">
-            <label htmlFor={`file-${index}`} className="block mb-2 text-sm font-medium text-white">{`File ${
-              index + 1
-            }`}</label>
+          <div className="relative border-dashed border-2 border-gray-600 py-12 flex flex-col justify-center items-center rounded-lg bg-gray-700">
             <input
+              id="file-upload"
               type="file"
-              id={`file-${index}`}
+              multiple
               className="hidden"
-              onChange={e => handleFileInputChange(index, e)}
+              onChange={handleFileInputChange}
             />
-            <label htmlFor={`file-${index}`} className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-lg">
-              Choose File
+            <label
+              htmlFor="file-upload"
+              className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700"
+            >
+              Drag & Drop or Click to Upload
             </label>
+            <p className="mt-2 text-sm text-gray-400">Supported formats: .jpg, .png, .pdf</p>
           </div>
-        ))}
+          {fileArray.length > 0 && (
+            <ul className="mt-4 grid grid-cols-2 gap-4">
+              {filePreview.map((file, index) => (
+                <li
+                  key={index}
+                  className="flex items-center justify-between p-2 bg-gray-700 rounded-lg"
+                >
+                  <div>
+                    <p className="text-sm text-gray-300 truncate">{file.name}</p>
+                    <p className="text-xs text-gray-500">{Math.round(file.size / 1024)} KB</p>
+                  </div>
+                  <button
+                    className="text-sm text-red-400 hover:underline"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      const updatedFiles = fileArray.filter((_, i) => i !== index);
+                      setFileArray(updatedFiles);
+                    }}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <button
           type="submit"
-          onClick={handleUpload}
-          className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
+          className="w-full px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-500"
         >
           Save on Blockchain
         </button>
       </form>
     </div>
+  </div>
   );
 };
 

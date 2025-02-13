@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import ConnectButton from '../miniComponents/ConnectButton'
 import fox from '../assets/images/fox.jpeg'
 import fox2 from '../assets/images/fox2.jpeg'
-import Upload from './Upload'
+// import Upload from './Upload'
 
 const Home = () => {
   const navigate = useNavigate();
